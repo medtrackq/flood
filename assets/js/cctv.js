@@ -1,0 +1,147 @@
+(function () {
+  'use strict';
+
+  // Camera list and images come through server.mjs, which caches what POPNIX collects.
+  var LIST_URL = '/api/cams';
+  var PAGE = 12;
+  var OLD_MIN = 60;
+  var REFRESH_MS = 2 * 60 * 1000;
+
+  var C = { cams: [], q: '', shown: PAGE };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function mins(c) { return Math.max(0, (Date.now() / 1000 - c.img) / 60); }
+
+  function ago(c) {
+    var m = mins(c);
+    if (m < 1) return 'เมื่อสักครู่';
+    if (m < 60) return Math.round(m) + ' นาทีก่อน';
+    if (m < 1440) return Math.floor(m / 60) + ' ชม. ก่อน';
+    return 'เกิน 1 วัน';
+  }
+
+  function hm(c) {
+    return new Date(c.img * 1000).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' }) + ' น.';
+  }
+
+  function src(c) { return '/cam/' + c.f + '/' + encodeURIComponent(c.id) + '.jpg?t=' + c.img; }
+
+  // Sources abbreviate inconsistently (ถนน/ถ., ซอย/ซ.), so compare on one spelling without spaces.
+  function norm(s) {
+    return String(s || '').toLowerCase()
+      .replace(/ถนน/g, 'ถ.').replace(/ซอย/g, 'ซ.').replace(/คลอง/g, 'ค.')
+      .replace(/\s+/g, '');
+  }
+
+  function prepare(cams) {
+    cams.forEach(function (c) { c._text = norm(c.name + ' ' + c.detail + ' ' + c.org); });
+    // Flood-watch cameras first, then fresh images, newest first; stale ones sink to the end.
+    cams.sort(function (a, b) {
+      return (b.flood - a.flood) ||
+        ((mins(a) > OLD_MIN) - (mins(b) > OLD_MIN)) ||
+        (b.img - a.img);
+    });
+    // A site often has several cameras under one name; show one of each before the rest.
+    var seen = {}, first = [], rest = [];
+    cams.forEach(function (c) { (seen[c.name] ? rest : first).push(c); seen[c.name] = true; });
+    return first.concat(rest);
+  }
+
+  function matches() {
+    var terms = C.q.split(/[\s,]+/).map(norm).filter(Boolean);
+    if (!terms.length) return C.cams;
+    return C.cams.filter(function (c) {
+      return terms.every(function (t) { return c._text.indexOf(t) !== -1; });
+    });
+  }
+
+  function tile(c) {
+    var old = mins(c) > OLD_MIN;
+    return '<li><button type="button" class="cc-tile" data-key="' + esc(c.f + ':' + c.id) + '">' +
+      '<span class="cc-tile__img"><img src="' + esc(src(c)) + '" alt="" loading="lazy" decoding="async">' +
+        '<em class="cc-age' + (old ? ' is-old' : '') + '">' + esc(ago(c)) + '</em>' +
+        (c.flood ? '<em class="cc-flag">เฝ้าน้ำท่วม</em>' : '') +
+      '</span>' +
+      '<span class="cc-tile__name">' + esc(c.name) + '</span>' +
+      '<span class="cc-tile__sub">' + esc(c.detail ? c.detail + ' · ' + c.org : c.org) + '</span>' +
+    '</button></li>';
+  }
+
+  function render() {
+    var list = matches();
+    var shown = list.slice(0, C.shown);
+    $('cc-tiles').innerHTML = shown.map(tile).join('');
+    $('cc-head').textContent = C.q
+      ? (list.length ? 'พบ ' + list.length.toLocaleString('th-TH') + ' กล้องที่ตรงกับ "' + C.q + '"' : 'ไม่พบกล้องที่ตรงกับ "' + C.q + '"')
+      : 'กล้องทั้งหมด ' + C.cams.length.toLocaleString('th-TH') + ' ตัว เรียงจากกล้องเฝ้าน้ำท่วมและภาพล่าสุด';
+    var more = $('cc-more');
+    more.hidden = shown.length >= list.length;
+    more.textContent = 'แสดงเพิ่ม (เหลืออีก ' + (list.length - shown.length).toLocaleString('th-TH') + ')';
+  }
+
+  function open(key) {
+    var c = C.cams.find(function (x) { return x.f + ':' + x.id === key; });
+    if (!c) return;
+    var img = $('cc-view-img');
+    img.src = src(c);
+    img.alt = c.name;
+    $('cc-view-name').textContent = c.name;
+    $('cc-view-meta').textContent = [c.detail, c.org, 'ภาพเมื่อ ' + hm(c) + ' (' + ago(c) + ')'].filter(Boolean).join(' · ');
+    var dlg = $('cc-view');
+    if (dlg.showModal) dlg.showModal(); else window.open(src(c), '_blank', 'noopener');
+  }
+
+  function load() {
+    return fetch(LIST_URL, { cache: 'no-cache' }).then(function (r) {
+      if (!r.ok) throw new Error(LIST_URL + ' ' + r.status);
+      return r.json();
+    }).then(function (d) {
+      if (!d || !Array.isArray(d.cams)) throw new Error('bad payload');
+      C.cams = prepare(d.cams);
+      render();
+    }).catch(function (err) {
+      console.error(err);
+      if (!C.cams.length) $('cc-head').textContent = 'โหลดรายการกล้องไม่สำเร็จ (ต้องเปิดผ่าน server.mjs)';
+    });
+  }
+
+  // ---------- events ----------
+  var typing;
+  $('cc-q').addEventListener('input', function (e) {
+    clearTimeout(typing);
+    typing = setTimeout(function () {
+      C.q = e.target.value.trim();
+      C.shown = PAGE;
+      render();
+    }, 200);
+  });
+
+  $('cc-more').addEventListener('click', function () {
+    C.shown += PAGE;
+    render();
+  });
+
+  $('cc-tiles').addEventListener('click', function (e) {
+    var b = e.target.closest('.cc-tile');
+    if (b) open(b.dataset.key);
+  });
+
+  // A broken image shows a placeholder instead of the browser's broken-image icon.
+  $('cc-tiles').addEventListener('error', function (e) {
+    if (e.target.tagName === 'IMG') e.target.closest('.cc-tile__img').classList.add('is-broken');
+  }, true);
+
+  $('cc-view').addEventListener('click', function (e) {
+    if (e.target === e.currentTarget) e.currentTarget.close(); // backdrop click
+  });
+
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
+  setInterval(function () { if (!document.hidden) load(); }, REFRESH_MS);
+  load();
+})();

@@ -80,16 +80,44 @@
         <ol class="top-list" id="top-list"><li class="muted">–</li></ol>
       </article>
     </section>
+
+    <section class="panel" id="cctv" aria-labelledby="cc-title">
+      <div class="panel__head">
+        <div>
+          <h2 id="cc-title">กล้อง CCTV ถนน</h2>
+          <p class="muted small">ภาพนิ่งล่าสุดจากกล้องจราจร กล้องที่จุดวัดน้ำท่วมถนน และกล้องทางหลวง ดูสภาพถนนจริงก่อนออกจากบ้าน</p>
+        </div>
+      </div>
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="cc-q" type="search" placeholder="ค้นหาถนน แยก หรือสถานที่ เช่น ลาดพร้าว, บางนา" autocomplete="off" aria-label="ค้นหากล้อง">
+      </label>
+      <p class="cc-head muted small" id="cc-head" aria-live="polite">กำลังโหลดรายการกล้อง…</p>
+      <ol class="cc-tiles" id="cc-tiles"></ol>
+      <div class="cc-more"><button type="button" class="btn" id="cc-more" hidden>แสดงเพิ่ม</button></div>
+    </section>
   </main>
+
+  <dialog class="cc-view" id="cc-view" aria-labelledby="cc-view-name">
+    <div class="cc-view__img"><img id="cc-view-img" alt=""></div>
+    <div class="cc-view__body">
+      <div>
+        <p class="cc-view__name" id="cc-view-name"></p>
+        <p class="muted small" id="cc-view-meta"></p>
+      </div>
+      <form method="dialog"><button class="btn" type="submit">ปิด</button></form>
+    </div>
+  </dialog>
 
   <footer class="foot">
     <div class="wrap">
       <p><strong>ไม่ใช่ประกาศเตือนภัยทางการ</strong> ค่าที่วัดเป็นของจุดติดตั้งเท่านั้น พื้นที่ที่ไม่มีจุดวัดไม่ได้แปลว่าไม่มีน้ำ ประกาศทางการให้ติดตามกรุงเทพมหานครและกรมอุตุนิยมวิทยา</p>
-      <p>ข้อมูล: สำนักการระบายน้ำ กรุงเทพมหานคร ผ่าน <a href="https://flood.pop.in.th" target="_blank" rel="noopener">POPNIX Flood (flood.pop.in.th)</a> · แผนที่ © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</p>
+      <p>ข้อมูล: สำนักการระบายน้ำ กรุงเทพมหานคร ผ่าน <a href="https://flood.pop.in.th" target="_blank" rel="noopener">POPNIX Flood (flood.pop.in.th)</a> · ภาพกล้อง: กล้องจราจร กทม., สำนักการระบายน้ำ กทม. และ iTIC ผ่าน POPNIX Flood · แผนที่ © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</p>
     </div>
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/cctv.js"></script>
 </body>
 </html>
