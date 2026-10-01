@@ -1,0 +1,13 @@
+{
+  "name": "flood",
+  "version": "0.1.0",
+  "private": true,
+  "description": "แผนที่ระดับน้ำคลองกรุงเทพฯ แบบเรียลไทม์ จาก POPNIX Flood open API",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
