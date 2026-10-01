@@ -326,6 +326,7 @@
     renderTop(d.stations);
     renderNotice(sum, res.src);
     renderUpdated();
+    document.dispatchEvent(new CustomEvent('flood:data', { detail: d }));
   }
 
   function refresh() {
@@ -341,6 +342,14 @@
   }
 
   // ---------- locate ----------
+  function showMe(me) {
+    if (meMarker) map.removeLayer(meMarker);
+    meMarker = L.marker([me.lat, me.lng], {
+      icon: L.divIcon({ className: '', html: '<div class="me-marker"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }),
+      keyboard: false, interactive: false, zIndexOffset: 1000
+    }).addTo(map);
+  }
+
   function km(a, b) {
     var x = (b.lng - a.lng) * Math.cos((a.lat + b.lat) * Math.PI / 360), y = b.lat - a.lat;
     return Math.sqrt(x * x + y * y) * 111.32;
@@ -358,11 +367,7 @@
     navigator.geolocation.getCurrentPosition(function (pos) {
       btn.classList.remove('is-loading');
       var me = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      if (meMarker) map.removeLayer(meMarker);
-      meMarker = L.marker([me.lat, me.lng], {
-        icon: L.divIcon({ className: '', html: '<div class="me-marker"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }),
-        keyboard: false, interactive: false
-      }).addTo(map);
+      showMe(me);
       var best = null, bestKm = Infinity;
       (state.data ? state.data.stations : []).forEach(function (st) {
         if (!st.online || st.lat == null) return;
@@ -399,7 +404,7 @@
   // The active link is the last section whose top has passed a line near the top of the viewport.
   function watchSections() {
     var links = document.querySelectorAll('.nav a');
-    var ids = ['overview', 'map-sec', 'cctv'].filter(function (id) { return $(id); });
+    var ids = ['overview', 'near', 'map-sec', 'cctv'].filter(function (id) { return $(id); });
     var ticking = false;
     function update() {
       ticking = false;
@@ -448,6 +453,17 @@
       if (state.data && !document.documentElement.dataset.theme) renderMap(state.data.stations);
     });
   }
+
+  // Shared with near.js and cctv.js.
+  window.Flood = {
+    map: map,
+    data: function () { return state.data; },
+    focusStation: focusStation,
+    showMe: showMe,
+    km: km,
+    levelOf: levelOf,
+    LEVELS: LEVELS
+  };
 
   watchSections();
   document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });

@@ -7,7 +7,8 @@
   var OLD_MIN = 60;
   var REFRESH_MS = 2 * 60 * 1000;
 
-  var C = { cams: [], q: '', shown: PAGE, view: null };
+  var C = { cams: [], q: '', shown: PAGE, view: null, near: null };
+  var NEAR_KM = 5;
   var $ = function (id) { return document.getElementById(id); };
 
   function esc(s) {
@@ -53,7 +54,16 @@
     return first.concat(rest);
   }
 
+  function km(c) {
+    var x = (c.lng - C.near.lng) * Math.cos(C.near.lat * Math.PI / 180) * 111.32, y = (c.lat - C.near.lat) * 110.57;
+    return Math.sqrt(x * x + y * y);
+  }
+
   function matches() {
+    if (C.near) {
+      return C.cams.filter(function (c) { return c.lat != null && (c._km = km(c)) <= NEAR_KM; })
+        .sort(function (a, b) { return a._km - b._km; });
+    }
     var terms = C.q.split(/[\s,]+/).map(norm).filter(Boolean);
     if (!terms.length) return C.cams;
     return C.cams.filter(function (c) {
@@ -69,7 +79,8 @@
         (c.flood ? '<em class="cc-flag">เฝ้าน้ำท่วม</em>' : '') +
       '</span>' +
       '<span class="cc-tile__name">' + esc(c.name) + '</span>' +
-      '<span class="cc-tile__sub">' + esc(c.detail ? c.detail + ' · ' + c.org : c.org) + '</span>' +
+      '<span class="cc-tile__sub">' + (C.near ? '<b>ห่าง ' + (c._km < 1 ? Math.round(c._km * 100) * 10 + ' ม.' : c._km.toFixed(1) + ' กม.') + '</b> · ' : '') +
+        esc(c.detail ? c.detail + ' · ' + c.org : c.org) + '</span>' +
     '</button></li>';
   }
 
@@ -79,9 +90,18 @@
     $('cc-tiles').innerHTML = shown.length ? shown.map(tile).join('')
       : '<li class="cc-empty">ไม่พบกล้องที่ตรงกับคำค้น ลองพิมพ์ชื่อถนนหรือแยกให้สั้นลง</li>';
     document.querySelectorAll('#cc-quick button').forEach(function (b) { b.classList.toggle('is-on', b.textContent === C.q); });
-    $('cc-head').textContent = C.q
+    $('cc-head').innerHTML = '';
+    $('cc-head').textContent = C.near
+      ? (list.length ? 'กล้องใกล้คุณ ' + list.length.toLocaleString('th-TH') + ' ตัวในรัศมี ' + NEAR_KM + ' กม. เรียงจากใกล้ไปไกล' : 'ไม่มีกล้องในรัศมี ' + NEAR_KM + ' กม.')
+      : C.q
       ? (list.length ? 'พบ ' + list.length.toLocaleString('th-TH') + ' กล้องที่ตรงกับ "' + C.q + '"' : 'ไม่พบกล้องที่ตรงกับ "' + C.q + '"')
       : 'กล้องทั้งหมด ' + C.cams.length.toLocaleString('th-TH') + ' ตัว เรียงจากกล้องเฝ้าน้ำท่วมและภาพล่าสุด';
+    if (C.near) {
+      var x = document.createElement('button');
+      x.type = 'button'; x.className = 'link-btn'; x.textContent = 'ดูกล้องทั้งหมด';
+      x.addEventListener('click', function () { C.near = null; C.shown = PAGE; render(); });
+      $('cc-head').append(' · ', x);
+    }
     var more = $('cc-more');
     more.hidden = shown.length >= list.length;
     more.textContent = 'แสดงเพิ่ม (เหลืออีก ' + (list.length - shown.length).toLocaleString('th-TH') + ')';
@@ -136,6 +156,7 @@
     clearTimeout(typing);
     typing = setTimeout(function () {
       C.q = e.target.value.trim();
+      C.near = null;
       C.shown = PAGE;
       render();
     }, 200);
@@ -147,6 +168,7 @@
     var q = b.classList.contains('is-on') ? '' : b.textContent;
     $('cc-q').value = q;
     C.q = q;
+    C.near = null;
     C.shown = PAGE;
     render();
   });
@@ -179,5 +201,17 @@
 
   document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
   setInterval(function () { if (!document.hidden) load(); }, REFRESH_MS);
+  // Used by near.js: list cameras around a point, nearest first.
+  window.FloodCams = {
+    near: function (p) {
+      C.near = { lat: +p.lat, lng: +p.lng };
+      C.q = '';
+      $('cc-q').value = '';
+      C.shown = PAGE;
+      render();
+      $('cctv').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   load();
 })();

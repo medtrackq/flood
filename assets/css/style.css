@@ -382,6 +382,102 @@ button.stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .cc-nav--next { right: 10px; }
 .cc-close { top: 10px; right: 10px; width: 38px; height: 38px; font-size: 24px; line-height: 1; }
 
+/* Near me + radar */
+:root { --radar-1: #0d3b39; --radar-2: #031417; --radar-line: #3df2b0; }
+.btn:disabled { opacity: 0.45; cursor: default; pointer-events: none; }
+.btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.btn--primary { color: #fff; background: var(--accent); border-color: var(--accent); }
+.btn--primary:hover { color: #fff; filter: brightness(1.08); }
+:root[data-theme="dark"] .btn--primary { color: #04202b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn--primary { color: #04202b; } }
+.btn.is-loading svg { animation: spin 1.2s linear infinite; }
+.link-btn { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+
+.near__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.near__body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+
+.radar-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+.radar-card__k { font-size: 13px; color: var(--muted); }
+.radar-card__title { font-size: clamp(19px, 2.4vw, 24px); font-weight: 700; line-height: 1.35; margin-top: 2px; }
+.radar-card__title em { font-style: normal; }
+.t-up { color: var(--up); }
+.t-down { color: var(--down); }
+.t-flat { color: var(--ok); }
+.radar-card__sub { font-size: 13px; color: var(--muted); margin-top: 4px; min-height: 20px; }
+
+.radar { position: relative; max-width: 360px; margin: 14px auto 6px; aspect-ratio: 1; border-radius: 50%; background: var(--radar-2); border: 2px solid color-mix(in srgb, var(--radar-line) 45%, transparent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--radar-line) 10%, transparent), 0 12px 40px rgb(0 30 30 / 35%); }
+.radar svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
+.radar__grid { fill: none; stroke: var(--radar-line); stroke-opacity: 0.22; stroke-width: 0.6; }
+.radar__grid circle:first-child { stroke-opacity: 0.5; stroke-width: 1; }
+.radar__lbl { fill: var(--radar-line); fill-opacity: 0.65; font-size: 6.5px; font-family: inherit; }
+.radar__lbl text:first-child { font-weight: 700; fill-opacity: 0.9; }
+.radar__sweep { fill: var(--radar-line); }
+.radar__sweep line { stroke: var(--radar-line); stroke-width: 1; stroke-opacity: 0.9; }
+.near:not(.is-scanning) .radar__sweep { opacity: 0.5; }
+.radar__me { fill: #fff; stroke: var(--radar-line); stroke-width: 2.5; }
+
+.rd { stroke: rgb(0 0 0 / 35%); stroke-width: 0.6; }
+.rd--crit { fill: var(--crit); } .rd--warn { fill: var(--warn); } .rd--ok { fill: #6fe0b8; } .rd--off { fill: none; stroke: #7d8a95; stroke-width: 1; }
+.cd { cursor: pointer; }
+.cd circle:not(.cd__ping) { stroke: #021012; stroke-width: 1; }
+.cd--crit circle { fill: #ff5c5c; } .cd--warn circle { fill: #ffb547; } .cd--ok circle { fill: #3df2b0; } .cd--unk circle { fill: #9aa8b3; }
+.cd--off circle:not(.cd__ping) { fill: #021012; stroke: #7d8a95; }
+.cd text { font-size: 7px; font-weight: 700; fill: #021012; font-family: inherit; pointer-events: none; }
+.cd:hover circle:not(.cd__ping) { stroke: #fff; stroke-width: 1.5; }
+.cd__ping { fill: none !important; stroke-width: 1.2; animation: ping 1.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.cd--crit .cd__ping { stroke: #ff5c5c; } .cd--warn .cd__ping { stroke: #ffb547; }
+@keyframes ping { from { transform: scale(1); opacity: 0.9; } to { transform: scale(3.2); opacity: 0; } }
+
+.radar-legend { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+.radar-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.lg { display: inline-block; width: 10px; height: 10px; border: 1.5px solid var(--muted); }
+.lg--canal { border-radius: 50%; }
+.lg--road { border-radius: 2px; }
+
+.near__h { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; margin: 4px 0 10px; }
+.near__h:not(:first-child) { margin-top: 20px; }
+.near__h svg { width: 18px; height: 18px; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.near-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.near-row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%;
+  font: inherit; color: inherit; text-align: left; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 11px 14px;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.near-row:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow); }
+.near-num { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; color: #fff; background: var(--unk); }
+.near-num--crit { background: var(--crit); } .near-num--warn { background: var(--warn); } .near-num--ok { background: var(--ok); }
+.near-num--off { background: transparent; color: var(--muted); border: 2px solid var(--off); }
+.near-sq { width: 22px; height: 22px; border-radius: 6px; background: var(--off); margin: 0 3px; }
+.near-sq--crit { background: var(--crit); } .near-sq--warn { background: var(--warn); } .near-sq--ok { background: var(--ok); }
+.near-main { min-width: 0; display: flex; flex-direction: column; }
+.near-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.near-sub { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.near-val { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.near-val b { font-size: 18px; }
+.near-val small { color: var(--muted); }
+.near-meta { display: flex; justify-content: flex-end; align-items: center; gap: 6px; font-size: 12px; margin-top: 2px; }
+.near-empty { color: var(--muted); font-size: 14px; padding: 14px; background: var(--surface-2); border-radius: 12px; text-align: center; }
+.badge--muted { color: var(--muted); background: var(--surface-2); }
+
+#map-sec.is-picking .map { cursor: crosshair; outline: 3px solid var(--accent); outline-offset: 2px; }
+#map-sec.is-picking .map-wrap::before {
+  content: "แตะบนแผนที่เพื่อเลือกตำแหน่งที่จะสแกน"; position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 600;
+  background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 999px; box-shadow: var(--shadow-lg); white-space: nowrap; pointer-events: none;
+}
+.cc-tile__sub b { color: var(--accent); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .near__body { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .near__actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+  .near__actions .btn { padding: 9px 10px; }
+  .radar-card { padding: 14px; }
+  .near-row { padding: 10px 12px; gap: 10px; }
+  .near-val b { font-size: 16px; }
+}
+
 /* Footer */
 .foot { border-top: 1px solid var(--line); padding: 18px 0 32px; font-size: 13px; color: var(--muted); }
 .foot p + p { margin-top: 6px; }

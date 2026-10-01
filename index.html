@@ -29,6 +29,7 @@
       </a>
       <nav class="nav" aria-label="ส่วนต่าง ๆ ของหน้า">
         <a href="#overview" data-sec="overview">ภาพรวม</a>
+        <a href="#near" data-sec="near">ใกล้ฉัน</a>
         <a href="#map-sec" data-sec="map-sec">แผนที่</a>
         <a href="#cctv" data-sec="cctv">กล้อง</a>
       </nav>
@@ -85,6 +86,77 @@
       </div>
     </section>
     <p class="sr-only" id="stat-help">กดเพื่อแสดงเฉพาะจุดวัดระดับนี้บนแผนที่</p>
+
+    <section class="panel near" id="near" aria-labelledby="near-title">
+      <div class="panel__head">
+        <div>
+          <h2 id="near-title">ใกล้คุณ</h2>
+          <p class="muted small" id="near-where">จุดวัดน้ำในรัศมี 3 กม. รอบตำแหน่งของคุณ</p>
+        </div>
+        <div class="near__actions">
+          <button type="button" class="btn btn--primary" id="near-gps">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/></svg>
+            <span>ตำแหน่งของฉัน</span>
+          </button>
+          <button type="button" class="btn" id="near-pick">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+            <span>เลือกบนแผนที่</span>
+          </button>
+          <button type="button" class="btn" id="near-map" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>
+            <span>ดูบนแผนที่</span>
+          </button>
+          <button type="button" class="btn" id="near-cams" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h12l2 3h4v8H3z"/><circle cx="10" cy="13" r="3"/></svg>
+            <span>กล้องใกล้ฉัน</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="near__body">
+        <div class="radar-card">
+          <p class="radar-card__k" id="near-k">รอบตัวคุณ ในรัศมี 3 กม.</p>
+          <p class="radar-card__title" id="near-title-text">กดปุ่ม <b>ตำแหน่งของฉัน</b> เพื่อเริ่มสแกน</p>
+          <p class="radar-card__sub" id="near-sub">หรือเลือกจุดที่สนใจบนแผนที่ เช่น บ้าน ที่ทำงาน</p>
+          <div class="radar" id="radar">
+            <svg viewBox="-100 -100 200 200" role="img" aria-labelledby="near-title-text" id="radar-svg">
+              <defs>
+                <radialGradient id="radar-bg" r="0.5">
+                  <stop offset="0" style="stop-color: var(--radar-1)"/>
+                  <stop offset="1" style="stop-color: var(--radar-2)"/>
+                </radialGradient>
+              </defs>
+              <circle r="100" fill="url(#radar-bg)"/>
+              <g class="radar__grid">
+                <circle r="92"/><circle r="61.3"/><circle r="30.7"/>
+                <path d="M-92 0H92M0 -92V92M-65 -65L65 65M-65 65L65 -65"/>
+              </g>
+              <g class="radar__lbl">
+                <text x="0" y="-94" text-anchor="middle">N</text>
+                <text x="3" y="28">1 กม.</text><text x="3" y="58.5">2 กม.</text><text x="3" y="89">3 กม.</text>
+              </g>
+              <g class="radar__sweep"></g>
+              <g id="radar-dots"></g>
+              <circle class="radar__me" r="4.5"/>
+            </svg>
+          </div>
+          <ul class="radar-legend" aria-label="คำอธิบายสัญลักษณ์">
+            <li><i class="lg lg--canal"></i>จุดวัดคลอง</li>
+            <li><i class="lg lg--road"></i>จุดวัดน้ำบนถนน</li>
+            <li><i class="dot dot--crit"></i>วิกฤต/ท่วม</li>
+            <li><i class="dot dot--warn"></i>เฝ้าระวัง/มีน้ำ</li>
+            <li><i class="dot dot--ok"></i>ปกติ</li>
+          </ul>
+        </div>
+
+        <div class="near__lists">
+          <h3 class="near__h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/></svg>คลองใกล้คุณ</h3>
+          <ol class="near-list" id="near-canals"><li class="near-empty">ยังไม่ได้เลือกตำแหน่ง</li></ol>
+          <h3 class="near__h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21 9 3M19 21 15 3M12 5v2M12 11v2M12 17v2"/></svg>น้ำบนถนนใกล้คุณ</h3>
+          <ol class="near-list" id="near-roads"><li class="near-empty">ยังไม่ได้เลือกตำแหน่ง</li></ol>
+        </div>
+      </div>
+    </section>
 
     <section class="panel" id="map-sec" aria-labelledby="map-title">
       <div class="panel__head">
@@ -178,5 +250,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/cctv.js"></script>
+  <script src="assets/js/near.js"></script>
 </body>
 </html>

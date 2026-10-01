@@ -15,6 +15,12 @@ const JSON_TTL = 60 * 1000;
 const IMG_TTL = 2 * 60 * 1000;
 const IMG_MAX = 400; // cached camera images (~30 KB each)
 
+// Open API endpoints: local path -> POPNIX path.
+const API_ROUTES = {
+  '/api/overview': '/api_overview.php',
+  '/api/roads': '/api_roads.php',
+};
+
 // Camera feeds POPNIX collects. Images live at `${img}${id}.jpg`.
 const CAM_FEEDS = {
   cctv: { list: '/cctv/cams.json', img: '/cctv/', org: 'กล้องจราจร กทม.' },
@@ -146,9 +152,10 @@ createServer(async (req, res) => {
     return;
   }
 
-  if (path === '/api/overview') {
+  const api = API_ROUTES[path];
+  if (api) {
     try {
-      const r = await cached('/api_overview.php', JSON_TTL);
+      const r = await cached(api, JSON_TTL);
       sendJSON(res, r.body, r.cache);
     } catch (err) { fail(res, path, err); }
     return;
