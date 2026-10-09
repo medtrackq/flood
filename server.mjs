@@ -19,8 +19,6 @@ const IMG_MAX = 400; // cached camera images (~30 KB each)
 const API_ROUTES = {
   '/api/overview': '/api_overview.php',
   '/api/roads': '/api_roads.php',
-  // Nationwide traffic events (floods reported by the Department of Highways and iTIC users).
-  '/api/thai-roads': 'https://event.longdo.com/feed/json',
 };
 
 // Camera feeds POPNIX collects. Images live at `${img}${id}.jpg`.
