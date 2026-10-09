@@ -15,10 +15,12 @@ const JSON_TTL = 60 * 1000;
 const IMG_TTL = 2 * 60 * 1000;
 const IMG_MAX = 400; // cached camera images (~30 KB each)
 
-// Open API endpoints: local path -> POPNIX path.
+// Open API endpoints: local path -> POPNIX path, or a full URL for other sources.
 const API_ROUTES = {
   '/api/overview': '/api_overview.php',
   '/api/roads': '/api_roads.php',
+  // Nationwide traffic events (floods reported by the Department of Highways and iTIC users).
+  '/api/thai-roads': 'https://event.longdo.com/feed/json',
 };
 
 // Camera feeds POPNIX collects. Images live at `${img}${id}.jpg`.
@@ -50,8 +52,8 @@ function cached(path, ttl, max = Infinity) {
 
   const pending = (async () => {
     try {
-      const r = await fetch(UPSTREAM + path, {
-        headers: { 'User-Agent': 'flood-dashboard (+https://flood.pop.in.th attribution)' },
+      const r = await fetch(path.startsWith('https://') ? path : UPSTREAM + path, {
+        headers: { 'User-Agent': 'flood-dashboard' },
         signal: AbortSignal.timeout(20000),
       });
       if (!r.ok) throw Object.assign(new Error(`upstream ${r.status}`), { status: r.status });
@@ -121,7 +123,9 @@ async function serveStatic(pathname, res) {
     return;
   }
   try {
-    if (!(await stat(file)).isFile()) throw new Error('not a file');
+    const st = await stat(file);
+    if (st.isDirectory()) { res.writeHead(301, { Location: pathname + '/' }).end(); return; }
+    if (!st.isFile()) throw new Error('not a file');
     const body = await readFile(file);
     res.writeHead(200, { 'Content-Type': TYPES[extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     res.end(body);
