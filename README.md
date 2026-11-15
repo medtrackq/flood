@@ -28,9 +28,9 @@ npm start            # หรือ node server.mjs
 
 1. เข้า [railway.com](https://railway.com) → **New Project** → **Deploy from GitHub repo** → เลือก `medtrackq/flood`
 2. Railway ตรวจเจอ `package.json` แล้วรัน `npm start` ให้เอง และส่งพอร์ตมาทางตัวแปร `PORT` ซึ่ง `server.mjs` ใช้อยู่แล้ว ไม่ต้องตั้งค่าอะไรเพิ่ม
-3. ที่ service → **Settings** → **Source** ตรวจว่า Branch เป็น `claude/flood-website-sw1d6p`
+3. ที่ service → **Settings** → **Source** ตรวจว่า Branch เป็น `main`
 4. **Settings** → **Networking** → **Generate Domain** เพื่อให้ได้ลิงก์ `https://….up.railway.app`
-5. ทุกครั้งที่ push ขึ้น `claude/flood-website-sw1d6p` Railway จะ deploy ใหม่ให้เอง
+5. ทุกครั้งที่ push ขึ้น `main` Railway จะ deploy ใหม่ให้เอง
 
 ## โครงสร้าง
 
